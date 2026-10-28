@@ -26,3 +26,9 @@ curl --fail https://resources.clotwallet.com/wallet/privacy.md
 ```
 
 Маршрут обслуживает только файл политики. Другие ресурсы домена этим деплоем не публикуются. Общая конфигурация ingress и существующие сервисы не изменяются.
+
+## DNS внутри Cherry
+
+28 октября 2026 DNS провайдера `10.100.0.53/54` возвращали NXDOMAIN для уже опубликованного домена, блокируя HTTP-01 self-check cert-manager. Для `resources.clotwallet.com` добавлен отдельный forward CoreDNS на `1.1.1.1` и `8.8.8.8` через поддерживаемый k3s ConfigMap `kube-system/coredns-custom`. Остальные зоны используют прежние DNS.
+
+Конфигурация: `deploy/cherry/resources-dns.yaml`. Она применяется отдельно (`kubectl apply -f deploy/cherry/resources-dns.yaml`), не входит в Kustomize приложения. При существующих сторонних ключах `coredns-custom` сохранять их. После исправления DNS провайдера правило можно удалить из ConfigMap; сначала проверить ответы обоих DNS и продление сертификатов.
